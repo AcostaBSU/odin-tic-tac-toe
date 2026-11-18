@@ -1,3 +1,45 @@
+function buildTicTacToe(game) {
+  return {
+    addBoardToDOM() {
+
+      function playTurn(event) {
+	if (game.isWinner()) return;
+
+        let target = event.target;
+	let marker = game.getTurn();
+
+	if (game.playTurn(Number(target.getAttribute("data-x")),
+                          Number(target.getAttribute("data-y")))) {
+          target.textContent = marker;
+	}
+      }
+      const body = document.querySelector("body");
+
+      const tttContainer = document.createElement("div");
+      tttContainer.setAttribute("class", "ttt-container");
+
+      const tttBoard = document.createElement("div");
+      tttBoard.setAttribute("class", "ttt-board");
+
+      let j = 0;
+      for (let i = 0; i < 9; i++) {
+        const tttTile = document.createElement("div");
+        tttTile.setAttribute("class", "ttt-tile");
+	if (i > 0 && (i % 3) === 0) {
+	  j++;
+	}
+        tttTile.setAttribute("data-x", j.toString());
+        tttTile.setAttribute("data-y", (i % 3).toString());
+	tttBoard.appendChild(tttTile);
+      }
+
+      tttBoard.addEventListener("click", playTurn);
+      tttContainer.appendChild(tttBoard);
+      body.appendChild(tttContainer);
+    }
+  }
+}
+
 function Player(m) {
   return {
     getM() {
@@ -84,10 +126,7 @@ function TicTacToe() {
     function isDiagWin() {
       const diags = board.getDiags();
 
-      console.log(diags);
       for (const diag of diags) {
-	console.log(diag);
-
 	if (diag[0] === diag[1] && diag[1] === diag[2] && diag[0] !== "-") {
 	  return true;
 	}
@@ -118,34 +157,38 @@ function TicTacToe() {
       return winner;
     },
 
-    playTurn() {
-      // get x and y from user
-      let x = prompt("x: ");
-      let y = prompt("y: ");
-
-      while (!verifier.isValid(x, y)) {
-	x = prompt("x: ");
-        y = prompt("y: ");
+    playTurn(x, y) {
+      if (!verifier.isValid(x, y)) {
+        return false;
       }
       
       board.updateBoard(controller.currentTurn().getM(), x, y);
 
+      winner = verifier.isWin(x, y);
       if (!winner) {
-        winner = verifier.isWin(x, y);
         controller.incrementTurn();
       }
+
+      return true;
     },
 
     getBoard() {
       return board.getBoard();
+    },
+
+    getTurn() {
+      return controller.currentTurn().getM();
     }
   }
 }
 
-
 const gameOne = TicTacToe();
+const tttBoardDom = buildTicTacToe(gameOne);
+tttBoardDom.addBoardToDOM();
 
+/*
 while (!gameOne.isWinner()) {
   gameOne.playTurn();
   console.log(gameOne.getBoard());
 }
+*/
